@@ -1,25 +1,37 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useEffect, useState } from 'react';
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+} from "react-router-dom";
+import NavBar from './components/navigation-bar';
+
+
+
+import UserDetail from './pages/user-detail';
+import UserList from './pages/users-list';
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <>
+      <BrowserRouter>
+        <NavBar />
+        <Routes>
+          {/* <Route
+          path='/users'
+          element={<div></div>}
+        > */}
+          <Route index element={<UserList />} />
+          <Route path='users/:userId' element={<UserDetail />} />
+          {/* </Route> */}
+          <Route
+            path="*"
+            element={
+              <UserList />}
+          />
+        </Routes>
+      </BrowserRouter>
+    </>
   );
 }
 
