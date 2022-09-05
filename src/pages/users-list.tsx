@@ -1,23 +1,38 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { useMachine } from '@xstate/react';
+
+import { loadingStatusMachine } from '../state-machines/loadingStatus';
+
 import { getUsers } from '../http';
 
-import { User } from '../interfaces';
 import UserListItem from '../components/user-list-item';
 import { Container, Heading } from '../components/presentation';
 import Spinner from '../components/spinner';
 
+import { User } from '../interfaces';
 
 function UserList() {
+  const [loadingState, sendLoadingState] = useMachine(loadingStatusMachine);
+
   const [users, setUsers] = useState<User[]>();
-  const [isLoadingUsers, setIsLoadingUsers] = useState(true);
   const [filter, setFilter] = useState('');
   useEffect(() => {
+
+    if (loadingState.matches('success') || loadingState.matches('error')) {
+      return;
+    }
+
+    sendLoadingState('TRIGGER');
     getUsers()
       .then(resp => {
         setUsers(resp);
-        setIsLoadingUsers(false);
-      });
+        sendLoadingState('RESOLVE');
+      }).catch(() =>
+        sendLoadingState('REJECT'));
   }, []);
+
+
+
 
 
   const filteredUsers = useMemo(() =>
@@ -32,8 +47,7 @@ function UserList() {
 
   return (
     <Container>
-      <></>
-      {isLoadingUsers ? <Spinner></Spinner> :
+      {loadingState.matches('fetching') ? <Spinner></Spinner> :
         <>
           <div className='mb-4'>
             <Heading>User dashboard</Heading>

@@ -1,6 +1,8 @@
+import { useMachine } from '@xstate/react';
 import React, { useEffect, useState } from 'react';
 
 import { useParams } from 'react-router-dom';
+
 import PersonalInfo from '../components/personal-info';
 import { Container, ResponsiveStack, VStack } from '../components/presentation';
 import SadView from '../components/sad-view';
@@ -11,26 +13,35 @@ import UserSkills from '../components/user-skills';
 import { getUser } from '../http';
 import { User } from '../interfaces';
 
+
+import { loadingStatusMachine } from '../state-machines/loadingStatus';
+
 function UserDetail() {
+  const [loadingState, sendLoadingAction] = useMachine(loadingStatusMachine);
+
   const { userId } = useParams<{ userId: string; }>();
 
   const [user, setUser] = useState<User | undefined>();
-  const [isLoading, setIsLoading] = useState(true);
-  const [isError, setIsError] = useState(false);
-
 
   useEffect(() => {
     if (userId) {
+
+      sendLoadingAction('TRIGGER');
       getUser(userId)
-        .then(user => setUser(user))
-        .catch(e => setIsError(true))
-        .finally(() => setIsLoading(false));
+        .then(user => {
+          setUser(user);
+          sendLoadingAction('RESOLVE');
+        })
+        .catch(e => {
+          sendLoadingAction('REJECT');
+        });
+
     }
   }, [userId]);
 
   return (
     <Container>
-      {isLoading ? <Spinner /> : !isError && user ? (
+      {loadingState.matches('fetching') ? <Spinner /> : loadingState.matches('success') && user ? (
 
         <VStack>
           <UserDetailHeading user={user}></UserDetailHeading>
