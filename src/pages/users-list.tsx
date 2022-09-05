@@ -32,9 +32,6 @@ function UserList() {
   }, []);
 
 
-
-
-
   const filteredUsers = useMemo(() =>
     !filter ? users : users?.filter(({ fullName, company }) =>
       fullName.includes(filter) || company.name.includes(filter)),
